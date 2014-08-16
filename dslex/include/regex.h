@@ -12,8 +12,16 @@
 class RegexNode
 {
 public:
+	bool leaf;
+	
+	/* Stuff we have to compute */
+	bool nullable;
+	
 	/* For debugging */
 	virtual void print(int offset) =0;
+	
+	/* Computation of properties of the node */
+	virtual void compute() =0;
 };
 
 class RegexInternalNode : public RegexNode
@@ -27,8 +35,8 @@ public:
 	/* Construct a RegexInternalNode given its type and its children */
 	RegexInternalNode(uint8_t type, RegexNode *left, RegexNode *right);
 	
-	/* Debugging */
 	void print(int offset);
+	void compute();
 };
 
 class RegexLeaf : public RegexNode
@@ -39,8 +47,8 @@ public:
 	/* Construct a RegexLeaf given its value */
 	RegexLeaf(char value);
 	
-	/* Debugging */
 	void print(int offset);
+	void compute();
 };
 
 RegexNode *parse_regex(const char **str);

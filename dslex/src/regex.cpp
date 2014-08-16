@@ -6,7 +6,7 @@
  *
  * regex  -> mult regex | ϵ
  * mult   -> factor? | factor* | factor+ | factor | factor '|' mult
- * factor -> <character> | . | (regex)
+ * factor -> <character> | (regex)
  */
 
 static RegexNode *regex(const char **str);
@@ -105,24 +105,75 @@ RegexInternalNode::RegexInternalNode(uint8_t type, RegexNode *left, RegexNode *r
 	this->type = type;
 	this->left = left;
 	this->right = right;
+	
+	this->leaf = false;
 }
 
 void RegexInternalNode::print(int offset)
 {
-	for (int i = 0; i < offset; i++) printf("\t"); 
-	printf("Internal node: %d\n", type);
+	for (int i = 0; i < offset; i++) printf("\t");
+	
+	printf("INTERNAL: %d", type);
+	
+	if (nullable) printf(", NULLABLE");
+	printf("\n");
 	
 	if (left) left->print(offset + 1);
 	if (right) right->print(offset + 1);
 }
 
+void RegexInternalNode::compute()
+{
+	if (left) left->compute();
+	if (right) right->compute();
+
+	if (type == REGEX_CONCAT)
+	{
+		nullable = left->nullable && right->nullable;
+	}
+	else if (type == REGEX_QUESTION)
+	{
+		nullable = true;
+	}
+	else if (type == REGEX_STAR)
+	{
+		nullable = true;
+	}
+	else if (type == REGEX_PLUS)
+	{
+		nullable = left->nullable;
+	}
+	else if (type == REGEX_UNION)
+	{
+		nullable = left->nullable || right->nullable;
+	}
+}
+
 RegexLeaf::RegexLeaf(char value)
 {
 	this->value = value;
+	
+	this->leaf = true;
 }
 
 void RegexLeaf::print(int offset)
 {
-	for (int i = 0; i < offset; i++) printf("\t"); 
-	printf("Leaf node: %c\n", value);
+	for (int i = 0; i < offset; i++) printf("\t");
+	
+	printf("LEAF: %c", value);
+	
+	if (nullable) printf(", NULLABLE");
+	printf("\n");
+}
+
+void RegexLeaf::compute()
+{
+	if (value)
+	{
+		nullable = false;
+	}
+	else
+	{
+		nullable = true;
+	}
 }
