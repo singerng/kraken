@@ -1,4 +1,5 @@
-#include <dslex/regex.h>
+#include <regex.h>
+#include <stdio.h>
 
 /* We have a simple grammar for regular expressions, which here is
  * given so it can be parsed by a simple recursive descent parser:
@@ -8,9 +9,13 @@
  * factor -> <character> | . | (regex)
  */
 
-static RegexNode *regex(char **str)
+static RegexNode *regex(const char **str);
+static RegexNode *mult(const char **str);
+static RegexNode *factor(const char **str);
+
+static RegexNode *regex(const char **str)
 {
-	if (**str)
+	if (**str && **str != ')')
 	{
 		/* Take the left and right regular expressions */
 		RegexNode *left = mult(str);
@@ -34,61 +39,63 @@ static RegexNode *regex(char **str)
 	
 }
 
-static RegexNode *mult(char **str)
+static RegexNode *mult(const char **str)
 {
 	RegexNode *left = factor(str);
 	
 	if (**str == '?')
 	{
-		*str++;
+		(*str)++;
 		return new RegexInternalNode(REGEX_QUESTION, left, 0);
 	}
 	else if (**str == '*')
 	{
-		*str++;
+		(*str)++;
 		return new RegexInternalNode(REGEX_STAR, left, 0);
 	}
 	else if (**str == '+')
 	{
-		*str++;
+		(*str)++;
 		return new RegexInternalNode(REGEX_PLUS, left, 0);
 	}
 	else if (**str == '|')
 	{
-		*str++;
+		(*str)++;
 		
 		RegexNode *right = mult(str);
 		return new RegexInternalNode(REGEX_UNION, left, right);
+	}
 	else
 	{
 		return left;
 	}
-	
 }
 
-static RegexNode *factor(char **str)
+static RegexNode *factor(const char **str)
 {
 	/* TODO: expand the alphabet */
 	if ('a' <= **str && **str <= 'z')
 	{
 		char val = **str;
-		*str++;
+		(*str)++;
 		return new RegexLeaf(val);
 	}
 	else if (**str == '(')
 	{
-		*str++;
+		(*str)++;
 		
 		RegexNode *contents = regex(str);
 		
 		/* TODO: add error handling and verify that **str is ')' */
-		*str++;
+		(*str)++;
 		
 		return contents;
 	}
+	
+	return 0;
 }
 
-RegexNode::RegexNode(char **str)
+RegexNode *parse_regex(const char **str)
 {
 	return regex(str);
 }
@@ -100,7 +107,22 @@ RegexInternalNode::RegexInternalNode(uint8_t type, RegexNode *left, RegexNode *r
 	this->right = right;
 }
 
+void RegexInternalNode::print(int offset)
+{
+	for (int i = 0; i < offset; i++) printf("\t"); 
+	printf("Internal node: %d\n", type);
+	
+	if (left) left->print(offset + 1);
+	if (right) right->print(offset + 1);
+}
+
 RegexLeaf::RegexLeaf(char value)
 {
 	this->value = value;
+}
+
+void RegexLeaf::print(int offset)
+{
+	for (int i = 0; i < offset; i++) printf("\t"); 
+	printf("Leaf node: %c\n", value);
 }

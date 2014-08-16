@@ -1,8 +1,10 @@
-#include <dslex/regex.h>
+#include <regex.h>
 
 int main(int argc, char **argv)
 {
-	RegexNode test = RegexNode("(a|b)*aab");
+	const char *regex = "(a|b)*aab";
+	RegexNode *test = parse_regex(&regex);
+	test->print(0);
 	
 	return 0;
 }

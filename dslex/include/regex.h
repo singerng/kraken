@@ -7,14 +7,16 @@
 #define REGEX_PLUS				3
 #define REGEX_UNION				4
 
+#include <stdint.h>
+
 class RegexNode
 {
 public:
-	/* Construct a RegexNode from a pointer to a regular expression */
-	RegexNode(char **str);
+	/* For debugging */
+	virtual void print(int offset) =0;
 };
 
-class RegexInternalNode
+class RegexInternalNode : public RegexNode
 {
 public:
 	uint8_t type;
@@ -24,15 +26,23 @@ public:
 	
 	/* Construct a RegexInternalNode given its type and its children */
 	RegexInternalNode(uint8_t type, RegexNode *left, RegexNode *right);
+	
+	/* Debugging */
+	void print(int offset);
 };
 
-class RegexLeaf
+class RegexLeaf : public RegexNode
 {
 public:
 	char value;
 	
 	/* Construct a RegexLeaf given its value */
 	RegexLeaf(char value);
+	
+	/* Debugging */
+	void print(int offset);
 };
+
+RegexNode *parse_regex(const char **str);
 
 #endif
