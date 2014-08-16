@@ -8,8 +8,6 @@
  * factor -> <character> | . | (regex)
  */
 
-using namespace DSLex;
-
 static RegexNode *regex(char **str)
 {
 	if (**str)
@@ -21,7 +19,7 @@ static RegexNode *regex(char **str)
 		/* There's no point in returning a concatenation of left and ϵ if right = ϵ */
 		if (right)
 		{
-			return new RegexOperator(REGEX_CONCAT, left, right);
+			return new RegexInternalNode(REGEX_CONCAT, left, right);
 		}
 		else
 		{
@@ -40,27 +38,27 @@ static RegexNode *mult(char **str)
 {
 	RegexNode *left = factor(str);
 	
-	if (**str == "?")
+	if (**str == '?')
 	{
 		*str++;
-		return new RegexOperator(REGEX_QUESTION, left, 0);
+		return new RegexInternalNode(REGEX_QUESTION, left, 0);
 	}
-	else if (**str == "*")
+	else if (**str == '*')
 	{
 		*str++;
-		return new RegexOperator(REGEX_STAR, left, 0);
+		return new RegexInternalNode(REGEX_STAR, left, 0);
 	}
-	else if (**str == "+")
+	else if (**str == '+')
 	{
 		*str++;
-		return new RegexOperator(REGEX_PLUS, left, 0);
+		return new RegexInternalNode(REGEX_PLUS, left, 0);
 	}
-	else if (**str == "|")
+	else if (**str == '|')
 	{
 		*str++;
 		
 		RegexNode *right = mult(str);
-		return new RegexOperator(REGEX_UNION, left, right);
+		return new RegexInternalNode(REGEX_UNION, left, right);
 	else
 	{
 		return left;
@@ -71,26 +69,38 @@ static RegexNode *mult(char **str)
 static RegexNode *factor(char **str)
 {
 	/* TODO: expand the alphabet */
-	if ("A" <= **str && **str <= "Z")
+	if ('a' <= **str && **str <= 'z')
 	{
 		char val = **str;
 		*str++;
 		return new RegexLeaf(val);
 	}
-	else if (**str == "(")
+	else if (**str == '(')
 	{
 		*str++;
 		
 		RegexNode *contents = regex(str);
 		
-		/* TODO: add error handling and verify that **str is ) */
+		/* TODO: add error handling and verify that **str is ')' */
 		*str++;
 		
 		return contents;
 	}
 }
 
-RegexNode *parse_regex(char **str)
+RegexNode::RegexNode(char **str)
 {
 	return regex(str);
+}
+
+RegexInternalNode::RegexInternalNode(uint8_t type, RegexNode *left, RegexNode *right)
+{
+	this->type = type;
+	this->left = left;
+	this->right = right;
+}
+
+RegexLeaf::RegexLeaf(char value)
+{
+	this->value = value;
 }
