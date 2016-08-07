@@ -1,56 +1,69 @@
-#ifndef __REGEXTYPE_H
-#define __REGEXTYPE_H
-
-#define REGEX_CONCAT			0
-#define REGEX_QUESTION			1
-#define REGEX_STAR				2
-#define REGEX_PLUS				3
-#define REGEX_UNION				4
+#ifndef __REGEX_H
+#define __REGEX_H
 
 #include <stdint.h>
+#include <set>
+
+class Leaf;
 
 class RegexNode
 {
 public:
-	bool leaf;
-	
-	/* Stuff we have to compute */
 	bool nullable;
-	
-	/* For debugging */
-	virtual void print(int offset) =0;
-	
-	/* Computation of properties of the node */
-	virtual void compute() =0;
+
+    std::set<Leaf*> *first, *last;
 };
 
-class RegexInternalNode : public RegexNode
+class Leaf : public RegexNode
 {
 public:
-	uint8_t type;
-	
-	RegexNode *left;
-	RegexNode *right;
-	
-	/* Construct a RegexInternalNode given its type and its children */
-	RegexInternalNode(uint8_t type, RegexNode *left, RegexNode *right);
-	
-	void print(int offset);
-	void compute();
+    char value;
+
+    Leaf(char value);
+
+    std::set<Leaf*> *follow;
 };
 
-class RegexLeaf : public RegexNode
+class NullNode : public RegexNode
 {
 public:
-	char value;
-	
-	/* Construct a RegexLeaf given its value */
-	RegexLeaf(char value);
-	
-	void print(int offset);
-	void compute();
+	NullNode();
 };
 
-RegexNode *parse_regex(const char **str);
+class StarNode : public RegexNode
+{
+public:
+    RegexNode *node;
+
+    StarNode(RegexNode *node);
+};
+
+class ConcatNode : public RegexNode
+{
+public:
+    RegexNode *left, *right;
+
+    ConcatNode(RegexNode *left, RegexNode *right);
+};
+
+class UnionNode : public RegexNode
+{
+public:
+    RegexNode *left, *right;
+
+    UnionNode(RegexNode *left, RegexNode *right);
+};
+
+class RegexParser
+{
+public:
+    RegexNode *parse(const char **str);
+
+private:
+    RegexNode *regex(const char **str);
+    RegexNode *concat(const char **str);
+    RegexNode *term(const char **str);
+    RegexNode *factor(const char **str);
+};
 
 #endif
