@@ -31,17 +31,19 @@ RegexNode *RegexParser::concat(const char **str)
 {
     if (**str && **str != ')') {
         RegexNode *left = term(str);
+        if (!left) return NULL;
 
         RegexNode *right = concat(str);
 
         if (right) return new ConcatNode(left, right);
         else return left;
-    }
+    } else return new NullNode();
 }
 
 RegexNode *RegexParser::term(const char **str)
 {
 	RegexNode *left = factor(str);
+    if (!left) return NULL;
 	
 	if (**str == '?')
 	{
@@ -82,9 +84,18 @@ RegexNode *RegexParser::factor(const char **str)
 		return contents;
 	}
 
-    /* TODO: error */
-    printf("ERROR");
     return NULL;
+}
+
+
+static std::set<Leaf*> *merge(std::set<Leaf*> *left, std::set<Leaf*> *right) {
+    std::set<Leaf*> *merged = new std::set<Leaf*>(*left);
+
+    for (Leaf* l : *right) {
+        merged->insert(l);
+    }
+
+    return merged;
 }
 
 Leaf::Leaf(char value)
@@ -103,16 +114,6 @@ NullNode::NullNode()
     this->nullable = true;
     this->first = new std::set<Leaf*>();
     this->last = new std::set<Leaf*>();
-}
-
-static std::set<Leaf*> *merge(std::set<Leaf*> *left, std::set<Leaf*> *right) {
-    std::set<Leaf*> *merged = new std::set<Leaf*>(*left);
-
-    for (Leaf* l : *right) {
-        //merged->insert(l);
-    }
-
-    return merged;
 }
 
 StarNode::StarNode(RegexNode *node) {

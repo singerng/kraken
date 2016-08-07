@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-	printf("hey\n");
+    RegexParser *prs = new RegexParser();
 	
  	char *regex = (char*) malloc(129);
  	size_t bsize = 128;
@@ -13,13 +13,9 @@ int main(int argc, char **argv)
  	{
  		regex[getline(&regex, &bsize, stdin)-1] = '\0';
 
-        RegexParser *prs = new RegexParser();
-
  		RegexNode *test = prs->parse((const char**) &regex);
 
         printf("PARSED");
-
-        break;
  	}
 	
 	return 0;
