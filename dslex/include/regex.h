@@ -2,7 +2,7 @@
 #define __REGEX_H
 
 #include <stdint.h>
-#include <set>
+#include <unordered_set>
 
 class Leaf;
 
@@ -11,7 +11,7 @@ class RegexNode
 public:
 	bool nullable;
 
-    std::set<Leaf*> *first, *last;
+    std::unordered_set<Leaf*> *first, *last;
 };
 
 class Leaf : public RegexNode
@@ -21,7 +21,7 @@ public:
 
     Leaf(char value);
 
-    std::set<Leaf*> *follow;
+    std::unordered_set<Leaf*> *follow;
 };
 
 class NullNode : public RegexNode
