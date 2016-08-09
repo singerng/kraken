@@ -1,10 +1,9 @@
 #include <regex.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 
 int main(int argc, char **argv)
 {
-    RegexParser *prs = new RegexParser();
+    RegexParser prs;
 	
  	char *regex = (char*) malloc(129);
  	size_t bsize = 128;
@@ -13,7 +12,8 @@ int main(int argc, char **argv)
  	{
  		regex[getline(&regex, &bsize, stdin)-1] = '\0';
 
- 		RegexNode *test = prs->parse((const char**) &regex);
+ 		DFA test = prs.parse((const char**) &regex);
+		test.print();
  	}
 	
 	return 0;

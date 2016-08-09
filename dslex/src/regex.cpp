@@ -14,91 +14,94 @@
  */
 
 static void merge_into(pos_set *left, pos_set *right) {
-    for (Leaf *l : *right) {
-        left->insert(l);
-    }
+	for (Leaf *l : *right) {
+		left->insert(l);
+	}
 }
 
 static pos_set *merge(pos_set *left, pos_set *right) {
-    pos_set *merged = new pos_set(*left);
+	pos_set *merged = new pos_set(*left);
 
-    merge_into(merged, right);
+	merge_into(merged, right);
 
-    return merged;
+	return merged;
 }
 
-RegexNode *RegexParser::parse(const char **str) {
-    RegexNode *regex = this->regex(str);
+DFA RegexParser::parse(const char **str) {
+	Leaf *end = new Leaf(END_LEAF);
+	RegexNode *regex = new ConcatNode(regex(str), end);
 
-    std::vector<pos_set> states;
-    states.push_back(*regex->first);
+	std::vector<pos_set> states;
+	states.push_back(*regex->first);
 
-    int first_unmarked = 0;
+	int first_unmarked = 0;
 
-    DFA *dfa = new DFA();
-    dfa->add_state();
+	DFA dfa;
+	dfa.add_state();
 
-    while (first_unmarked < states.size()) {
-        pos_set t = states[first_unmarked];
+	/* TODO: destroy the tree data structure */
 
-        /* TODO: adapt this to work with Unicode */
-        for (int c = 0; c < 256; c++) {
-            pos_set u;
+	while (first_unmarked < states.size()) {
+		pos_set t = states[first_unmarked];
 
-            for (Leaf *l : t) {
-                if (l->value == c) {
-                    merge_into(&u, l->follow);
-                }
-            }
+		/* TODO: adapt this to work with Unicode */
+		for (int c = 0; c < 256; c++) {
+			pos_set u;
 
-            if (u.size() > 0) {
-                int pos = std::find(states.begin(), states.end(), u) - states.begin();
+			for (Leaf *l : t) {
+				if (l->value == c) {
+					merge_into(&u, l->follow);
+				}
+			}
 
-                if (pos == states.size()) {
-                    states.push_back(u);
-                    dfa->add_state();
-                }
+			if (u.size() > 0) {
+				int pos = std::find(states.begin(), states.end(), u) - states.begin();
 
-                dfa->set_trans(first_unmarked, c, pos);
-            }
-        }
+				if (pos == states.size()) {
+					states.push_back(u);
+					int state = dfa.add_state();
+					if (u.find(end) != u.end()) dfa.set_accept(state, true);
+				}
 
-        first_unmarked++;
-    }
+				dfa.set_trans(first_unmarked, c, pos);
+			}
+		}
 
-    dfa->print();
+		first_unmarked++;
+	}
+
+	return dfa;
 }
 
 RegexNode *RegexParser::regex(const char **str)
 {
-    RegexNode *left = concat(str);
+	RegexNode *left = concat(str);
 
-    if (**str == '|') {
-        (*str)++;
-        RegexNode *right = regex(str);
-        return new UnionNode(left, right);
-    }
-    return left;
+	if (**str == '|') {
+		(*str)++;
+		RegexNode *right = regex(str);
+		return new UnionNode(left, right);
+	}
+	return left;
 }
 
 RegexNode *RegexParser::concat(const char **str)
 {
-    if (**str && **str != ')') {
-        RegexNode *left = term(str);
-        if (!left) return NULL;
+	if (**str && **str != ')') {
+		RegexNode *left = term(str);
+		if (!left) return NULL;
 
-        RegexNode *right = concat(str);
+		RegexNode *right = concat(str);
 
-        if (right) return new ConcatNode(left, right);
-        else return left;
-    } else return new NullNode();
+		if (right) return new ConcatNode(left, right);
+		else return left;
+	} else return new NullNode();
 }
 
 RegexNode *RegexParser::term(const char **str)
 {
 	RegexNode *left = factor(str);
-    if (!left) return NULL;
-	
+	if (!left) return NULL;
 	if (**str == '?')
 	{
 		(*str)++;
@@ -138,69 +141,69 @@ RegexNode *RegexParser::factor(const char **str)
 		return contents;
 	}
 
-    return NULL;
+	return NULL;
 }
 
 Leaf::Leaf(char value)
 {
 	this->value = value;
-    this->nullable = false;
+	this->nullable = false;
 
-    this->first = new pos_set();
-    this->first->insert(this);
+	this->first = new pos_set();
+	this->first->insert(this);
 
-    this->last = new pos_set(*this->first);
+	this->last = new pos_set(*this->first);
 
-    this->follow = new pos_set();
+	this->follow = new pos_set();
 }
 
 NullNode::NullNode()
 {
-    this->nullable = true;
-    this->first = new pos_set();
-    this->last = new pos_set();
+	this->nullable = true;
+	this->first = new pos_set();
+	this->last = new pos_set();
 }
 
 StarNode::StarNode(RegexNode *node) {
-    this->node = node;
+	this->node = node;
 
-    this->nullable = true;
+	this->nullable = true;
 
-    this->first = new pos_set(*node->first);
-    this->last = new pos_set(*node->last);
+	this->first = new pos_set(*node->first);
+	this->last = new pos_set(*node->last);
 
-    for (Leaf *l : *this->last) {
-        for (Leaf *m : *this->first) {
-            l->follow->insert(m);
-        }
-    }
+	for (Leaf *l : *this->last) {
+		for (Leaf *m : *this->first) {
+			l->follow->insert(m);
+		}
+	}
 }
 
 ConcatNode::ConcatNode(RegexNode *left, RegexNode *right) {
-    this->left = left;
-    this->right = right;
+	this->left = left;
+	this->right = right;
 
-    this->nullable = left->nullable && right->nullable;
+	this->nullable = left->nullable && right->nullable;
 
-    if (left->nullable) this->first = merge(left->first, right->first);
-    else this->first = new pos_set(*left->first);
+	if (left->nullable) this->first = merge(left->first, right->first);
+	else this->first = new pos_set(*left->first);
 
-    if (right->nullable) this->last = merge(left->last, right->last);
-    else this->last = new pos_set(*right->last);
+	if (right->nullable) this->last = merge(left->last, right->last);
+	else this->last = new pos_set(*right->last);
 
-    for (Leaf* l : *left->last) {
-        for (Leaf* m : *right->first) {
-            l->follow->insert(m);
-        }
-    }
+	for (Leaf* l : *left->last) {
+		for (Leaf* m : *right->first) {
+			l->follow->insert(m);
+		}
+	}
 }
 
 UnionNode::UnionNode(RegexNode *left, RegexNode *right) {
-    this->left = left;
-    this->right = right;
+	this->left = left;
+	this->right = right;
 
-    this->nullable = left->nullable || right->nullable;
+	this->nullable = left->nullable || right->nullable;
 
-    this->first = merge(left->first, right->first);
-    this->last = merge(left->last, right->last);
+	this->first = merge(left->first, right->first);
+	this->last = merge(left->last, right->last);
 }

@@ -2,6 +2,9 @@
 #define __REGEX_H
 
 #include <unordered_set>
+#include <dfa.h>
+
+#define END_LEAF -1
 
 class Leaf;
 
@@ -56,7 +59,7 @@ public:
 class RegexParser
 {
 public:
-    RegexNode *parse(const char **str);
+    DFA parse(const char **str);
 
 private:
     RegexNode *regex(const char **str);
