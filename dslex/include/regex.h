@@ -1,7 +1,6 @@
 #ifndef __REGEX_H
 #define __REGEX_H
 
-#include <stdint.h>
 #include <unordered_set>
 
 class Leaf;
@@ -65,5 +64,8 @@ private:
     RegexNode *term(const char **str);
     RegexNode *factor(const char **str);
 };
+
+/* Save us some typing */
+typedef std::unordered_set<Leaf*> pos_set;
 
 #endif

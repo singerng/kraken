@@ -14,8 +14,6 @@ int main(int argc, char **argv)
  		regex[getline(&regex, &bsize, stdin)-1] = '\0';
 
  		RegexNode *test = prs->parse((const char**) &regex);
-
-        printf("PARSED");
  	}
 	
 	return 0;

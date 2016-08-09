@@ -1,10 +1,11 @@
 #include <regex.h>
-#include <stdio.h>
-#include <unordered_set>
 #include <vector>
+#include <algorithm>
+#include <dfa.h>
+#include <iostream>
 
-/* We have a simple grammar for regular expressions, which here is
- * given so it can be parsed by a simple recursive descent parser:
+/* We have a simple grammar for regular expressions, which can
+ * be parsed by a recursive descent parser:
  *
  * regex  -> concat '|' regex | concat
  * concat -> term concat | ϵ
@@ -12,15 +13,14 @@
  * factor -> <character> | (regex)
  */
 
-
-static void merge_into(std::unordered_set<Leaf*> *left, std::unordered_set<Leaf*> *right) {
+static void merge_into(pos_set *left, pos_set *right) {
     for (Leaf *l : *right) {
         left->insert(l);
     }
 }
 
-static std::unordered_set<Leaf*> *merge(std::unordered_set<Leaf*> *left, std::unordered_set<Leaf*> *right) {
-    std::unordered_set<Leaf*> *merged = new std::unordered_set<Leaf*>(*left);
+static pos_set *merge(pos_set *left, pos_set *right) {
+    pos_set *merged = new pos_set(*left);
 
     merge_into(merged, right);
 
@@ -28,32 +28,45 @@ static std::unordered_set<Leaf*> *merge(std::unordered_set<Leaf*> *left, std::un
 }
 
 RegexNode *RegexParser::parse(const char **str) {
-    RegexNode *regex = regex(str);
+    RegexNode *regex = this->regex(str);
 
-    std::unordered_set<std::unordered_set<Leaf*>> *unmarked = new std::unordered_set<std::unordered_set<Leaf*>>();
-    std::vector<std::unordered_set<Leaf*>> *marked = new std::vector<std::unordered_set<Leaf*>>();
+    std::vector<pos_set> states;
+    states.push_back(*regex->first);
 
-    unmarked->insert(*regex->first);
+    int first_unmarked = 0;
 
-    while (!unmarked->empty()) {
-        std::unordered_set<Leaf*> t = *unmarked->begin();
-        unmarked->erase(t);
+    DFA *dfa = new DFA();
+    dfa->add_state();
+
+    while (first_unmarked < states.size()) {
+        pos_set t = states[first_unmarked];
 
         /* TODO: adapt this to work with Unicode */
-        for (char c = 0; c < 256; c++) {
-            std::unordered_set<Leaf*> *u = new std::unordered_set<Leaf*>();
+        for (int c = 0; c < 256; c++) {
+            pos_set u;
 
             for (Leaf *l : t) {
                 if (l->value == c) {
-                    merge_into(u, l->follow);
+                    merge_into(&u, l->follow);
                 }
             }
 
-            if (!u->empty() && unmarked->find(*u) == unmarked->end() && marked->find(*u) == marked->end()) {
+            if (u.size() > 0) {
+                int pos = std::find(states.begin(), states.end(), u) - states.begin();
 
+                if (pos == states.size()) {
+                    states.push_back(u);
+                    dfa->add_state();
+                }
+
+                dfa->set_trans(first_unmarked, c, pos);
             }
         }
+
+        first_unmarked++;
     }
+
+    dfa->print();
 }
 
 RegexNode *RegexParser::regex(const char **str)
@@ -133,19 +146,19 @@ Leaf::Leaf(char value)
 	this->value = value;
     this->nullable = false;
 
-    this->first = new std::unordered_set<Leaf*>();
+    this->first = new pos_set();
     this->first->insert(this);
 
-    this->last = new std::unordered_set<Leaf*>(*this->first);
+    this->last = new pos_set(*this->first);
 
-    this->follow = new std::unordered_set<Leaf*>();
+    this->follow = new pos_set();
 }
 
 NullNode::NullNode()
 {
     this->nullable = true;
-    this->first = new std::unordered_set<Leaf*>();
-    this->last = new std::unordered_set<Leaf*>();
+    this->first = new pos_set();
+    this->last = new pos_set();
 }
 
 StarNode::StarNode(RegexNode *node) {
@@ -153,8 +166,8 @@ StarNode::StarNode(RegexNode *node) {
 
     this->nullable = true;
 
-    this->first = new std::unordered_set<Leaf*>(*node->first);
-    this->last = new std::unordered_set<Leaf*>(*node->last);
+    this->first = new pos_set(*node->first);
+    this->last = new pos_set(*node->last);
 
     for (Leaf *l : *this->last) {
         for (Leaf *m : *this->first) {
@@ -170,10 +183,10 @@ ConcatNode::ConcatNode(RegexNode *left, RegexNode *right) {
     this->nullable = left->nullable && right->nullable;
 
     if (left->nullable) this->first = merge(left->first, right->first);
-    else this->first = new std::unordered_set<Leaf*>(*left->first);
+    else this->first = new pos_set(*left->first);
 
     if (right->nullable) this->last = merge(left->last, right->last);
-    else this->last = new std::unordered_set<Leaf*>(*right->last);
+    else this->last = new pos_set(*right->last);
 
     for (Leaf* l : *left->last) {
         for (Leaf* m : *right->first) {
