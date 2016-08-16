@@ -34,8 +34,13 @@ void DFA::set_trans(int source, char value, int dest) {
 
 int DFA::move(char value) {
     state = dfa[state].trans[value];
+    count++;
 
     return status();
+}
+
+int DFA::move_count() {
+    return count;
 }
 
 int DFA::status() {
@@ -45,7 +50,8 @@ int DFA::status() {
 }
 
 void DFA::reset() {
-    state = 0;
+    state = DFA_OK;
+    count = 0;
 }
 
 void DFA::print() {

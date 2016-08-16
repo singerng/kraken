@@ -29,7 +29,7 @@ static pos_set *merge(pos_set *left, pos_set *right) {
 
 DFA RegexParser::parse(const char **str) {
 	Leaf *end = new Leaf(END_LEAF);
-	RegexNode *regex = new ConcatNode(regex(str), end);
+	RegexNode *regex = new ConcatNode(this->regex(str), end);
 
 	std::vector<pos_set> states;
 	states.push_back(*regex->first);
@@ -123,7 +123,7 @@ RegexNode *RegexParser::term(const char **str)
 RegexNode *RegexParser::factor(const char **str)
 {
 	/* TODO: expand the alphabet */
-	if ('a' <= **str && **str <= 'z')
+	if ('a' <= **str && **str <= 'z' || '0' <= **str && **str <= '9')
 	{
 		char val = **str;
 		(*str)++;

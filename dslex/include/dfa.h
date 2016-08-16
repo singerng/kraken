@@ -31,6 +31,9 @@ public:
     /* Move to a new state based on an input symbol */
     int move(char value);
 
+    /* Count the moves already made */
+    int move_count();
+
     /* Get the current status of the DFA */
     int status();
 
@@ -42,7 +45,7 @@ public:
 
 private:
     std::vector<struct state> dfa;
-    int state;
+    int state, count;
 };
 
 #endif
