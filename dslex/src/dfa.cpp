@@ -4,13 +4,14 @@
 #include <algorithm>
 
 DFA::DFA() {
+    reset();
 }
 
 int DFA::add_state() {
     /* Allocate a new state with default properties (no transitions out, non-accept )*/
     struct state state;
     std::fill(state.trans.begin(), state.trans.end(), DFA_ERROR);
-    state.accept = false;
+    state.accept = DFA_OK;
 
     /* Add the state to the DFA */
     dfa.push_back(state);
@@ -19,7 +20,7 @@ int DFA::add_state() {
     return dfa.size()-1;
 }
 
-void DFA::set_accept(int state, bool accept) {
+void DFA::set_accept(int state, int accept) {
     /* Mark the given state as an accept or non-accept state */
     dfa[state].accept = accept;
 }
@@ -45,19 +46,18 @@ int DFA::move_count() {
 
 int DFA::status() {
     if (state == DFA_ERROR) return DFA_ERROR;
-    else if (dfa[state].accept) return DFA_ACCEPT;
-    else return DFA_OK;
+    else return dfa[state].accept;
 }
 
 void DFA::reset() {
-    state = DFA_OK;
+    state = 0;
     count = 0;
 }
 
 void DFA::print() {
     for (int state = 0; state < dfa.size(); state++) {
         std::cout << "[state " << state << "]";
-        if (dfa[state].accept) std::cout << " [ACCEPT]";
+        if (dfa[state].accept > DFA_OK) std::cout << " [ACCEPT " << dfa[state].accept << "]";
         std::cout << std::endl;
 
         for (int c = 0; c < 256; c++) {

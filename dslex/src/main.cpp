@@ -4,45 +4,21 @@
 #include <fstream>
 #include <map>
 
-struct token {
-    std::string name;
-    DFA dfa;
-};
+std::vector<std::string> tokens;
+DFA dfa;
 
-std::vector<struct token> tokens;
-
-std::string next_token(std::istream in) {
+int next_token(std::istream &in) {
     std::string lex;
     in >> lex;
     const char *clex = lex.c_str();
-    int since = 0;
 
-    std::vector<struct token*> viable;
-    for (auto token : tokens) {
-        viable.push_back(new struct token(token));
+    int last_match = DFA_OK;
+
+    while (dfa.move(*(clex++)) != DFA_ERROR) {
+        if (dfa.status() > DFA_OK) last_match = dfa.status();
     }
 
-    struct token *best = NULL;
-
-    while (viable.size() >= 1) {
-        for (auto iter = viable.begin(); iter < viable.end();) {
-            (*iter)->dfa.move(*(clex++));
-
-            if ((*iter)->dfa.status() == DFA_ERROR) {
-                auto prev = iter++;
-                viable.erase(prev);
-            } else {
-                if ((*iter)->dfa.status() == DFA_ACCEPT) {
-                    best = *iter;
-                }
-                iter++;
-            }
-        }
-
-        since++;
-    }
-
-    return best->name;
+    return last_match-1;
 }
 
 int main(int argc, char **argv) {
@@ -55,17 +31,27 @@ int main(int argc, char **argv) {
     /* Parse each token into a DFA and load it into a map */
     std::string name, pattern;
 
+    RegexNode *node = NULL;
+
     while (spec >> name >> pattern) {
         const char *cregex = pattern.c_str();
-        DFA dfa = prs.parse(&cregex);
-        struct token token;
-        token.name = name;
-        token.dfa = dfa;
-        tokens.push_back(token);
+        RegexNode *regex = prs.regex(&cregex);
+
+        tokens.push_back(name);
+
+        if (node) node = new UnionNode(node, new ConcatNode(regex, new Leaf(tokens.size(), true)));
+        else node = new ConcatNode(regex, new Leaf(tokens.size(), true));
     }
 
+    dfa = prs.parse(node);
+
+    dfa.print();
+
     while (1) {
-        std::string tkn = next_token(std::cin);
-        std::cout << tkn << std::endl;
+        int tkn = next_token(std::cin);
+
+        if (tkn != DFA_ERROR) std::cout << tokens[tkn] << std::endl;
+        else std::cout << "NONE" << std::endl;
+        dfa.reset();
     }
 }

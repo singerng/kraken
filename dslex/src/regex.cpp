@@ -1,8 +1,8 @@
 #include <regex.h>
-#include <vector>
 #include <algorithm>
-#include <dfa.h>
 #include <iostream>
+
+#define MAX(x,y) (x>y)?x:y
 
 /* We have a simple grammar for regular expressions, which can
  * be parsed by a recursive descent parser:
@@ -27,12 +27,9 @@ static pos_set *merge(pos_set *left, pos_set *right) {
 	return merged;
 }
 
-DFA RegexParser::parse(const char **str) {
-	Leaf *end = new Leaf(END_LEAF);
-	RegexNode *regex = new ConcatNode(this->regex(str), end);
-
+DFA RegexParser::parse(RegexNode *root) {
 	std::vector<pos_set> states;
-	states.push_back(*regex->first);
+	states.push_back(*root->first);
 
 	int first_unmarked = 0;
 
@@ -48,11 +45,8 @@ DFA RegexParser::parse(const char **str) {
 		for (int c = 0; c < 256; c++) {
 			pos_set u;
 
-			for (Leaf *l : t) {
-				if (l->value == c) {
-					merge_into(&u, l->follow);
-				}
-			}
+			for (Leaf *l : t)
+				if (l->value == c) merge_into(&u, l->follow);
 
 			if (u.size() > 0) {
 				int pos = std::find(states.begin(), states.end(), u) - states.begin();
@@ -60,7 +54,12 @@ DFA RegexParser::parse(const char **str) {
 				if (pos == states.size()) {
 					states.push_back(u);
 					int state = dfa.add_state();
-					if (u.find(end) != u.end()) dfa.set_accept(state, true);
+
+					int accept = DFA_OK;
+					for (Leaf* l : u)
+						if (l->end) accept = MAX(accept, l->value);
+
+					dfa.set_accept(state, accept);
 				}
 
 				dfa.set_trans(first_unmarked, c, pos);
@@ -127,7 +126,7 @@ RegexNode *RegexParser::factor(const char **str)
 	{
 		char val = **str;
 		(*str)++;
-		return new Leaf(val);
+		return new Leaf(val, false);
 	}
 	else if (**str == '(')
 	{
@@ -144,9 +143,10 @@ RegexNode *RegexParser::factor(const char **str)
 	return NULL;
 }
 
-Leaf::Leaf(char value)
+Leaf::Leaf(char value, bool end)
 {
 	this->value = value;
+	this->end = end;
 	this->nullable = false;
 
 	this->first = new pos_set();
@@ -173,9 +173,7 @@ StarNode::StarNode(RegexNode *node) {
 	this->last = new pos_set(*node->last);
 
 	for (Leaf *l : *this->last) {
-		for (Leaf *m : *this->first) {
-			l->follow->insert(m);
-		}
+		merge_into(l->follow, this->first);
 	}
 }
 
@@ -192,9 +190,7 @@ ConcatNode::ConcatNode(RegexNode *left, RegexNode *right) {
 	else this->last = new pos_set(*right->last);
 
 	for (Leaf* l : *left->last) {
-		for (Leaf* m : *right->first) {
-			l->follow->insert(m);
-		}
+		merge_into(l->follow, right->first);
 	}
 }
 

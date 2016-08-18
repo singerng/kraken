@@ -6,12 +6,11 @@
 
 #define DFA_ERROR   -1
 #define DFA_OK      0
-#define DFA_ACCEPT  1
 
 struct state
 {
     std::array<int, 256> trans;
-    bool accept;
+    int accept;
 };
 
 class DFA
@@ -23,7 +22,7 @@ public:
     int add_state();
 
     /* Mark a DFA state as accept or non-accept */
-    void set_accept(int state, bool accept);
+    void set_accept(int state, int accept);
 
     /* Set a transition from one state of the DFA to another */
     void set_trans(int source, char value, int target);

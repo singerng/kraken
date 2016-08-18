@@ -4,8 +4,6 @@
 #include <unordered_set>
 #include <dfa.h>
 
-#define END_LEAF -1
-
 class Leaf;
 
 class RegexNode
@@ -20,8 +18,9 @@ class Leaf : public RegexNode
 {
 public:
     char value;
+	bool end;
 
-    Leaf(char value);
+    Leaf(char value,  bool end);
 
     std::unordered_set<Leaf*> *follow;
 };
@@ -59,10 +58,10 @@ public:
 class RegexParser
 {
 public:
-    DFA parse(const char **str);
+    DFA parse(RegexNode *root);
+	RegexNode *regex(const char **str);
 
 private:
-    RegexNode *regex(const char **str);
     RegexNode *concat(const char **str);
     RegexNode *term(const char **str);
     RegexNode *factor(const char **str);
