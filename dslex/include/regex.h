@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <dfa.h>
 
+#define END_LEX		-1
+
 class Leaf;
 
 class RegexNode

@@ -122,7 +122,7 @@ RegexNode *RegexParser::term(const char **str)
 RegexNode *RegexParser::factor(const char **str)
 {
 	/* TODO: expand the alphabet */
-	if ('a' <= **str && **str <= 'z' || '0' <= **str && **str <= '9')
+	if ('a' <= **str && **str <= 'z' || '0' <= **str && **str <= '9' || **str == ' ')
 	{
 		char val = **str;
 		(*str)++;
