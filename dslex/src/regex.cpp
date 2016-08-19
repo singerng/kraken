@@ -127,6 +127,18 @@ RegexNode *RegexParser::factor(const char **str)
 		char val = **str;
 		(*str)++;
 		return new Leaf(val, false);
+	} else if (**str == '\\') {
+		/* We're in escape mode */
+		(*str)++;
+
+		char val;
+		if (**str == '\\' || **str == '+' || **str == '*' || **str == '?' || **str == '|' || **str == '(' || **str == ')') val = **str;
+		else if (**str == 'n') val = '\n';
+		else if (**str == 't') val = '\t';
+		else /* ERROR */;
+
+		(*str)++;
+		return new Leaf(val, False);
 	}
 	else if (**str == '(')
 	{
