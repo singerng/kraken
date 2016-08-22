@@ -1,6 +1,5 @@
-#include "dfa.h"
+#include <dfa.h>
 #include <iostream>
-#include <array>
 #include <algorithm>
 
 DFA::DFA() {

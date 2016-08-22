@@ -1,11 +1,11 @@
-#include "../include/regex.h"
+#include <regex.h>
 #include <algorithm>
 #include <iostream>
 
 #define MAX(x,y) (x>y)?x:y
 
 /* We have a simple grammar for regular expressions, which can
- * be parsed by a recursive descent parser:
+ * be parsed by a predictive parser parser:
  *
  * regex  -> concat '|' regex | concat
  * concat -> term concat | ϵ

@@ -1,5 +1,5 @@
-#include "../include/regex.h"
-#include "dfa.h"
+#include <regex.h>
+#include <dfa.h>
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -48,5 +48,7 @@ int main(int argc, char **argv) {
     std::ofstream out;
     out.open(argv[2]);
 
-    for (int i = 0; i < dfa.)
+    for (int i = 0; i < dfa.num_states(); i++) {
+
+    }
 }
