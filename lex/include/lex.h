@@ -10,13 +10,14 @@ public:
     Lexer(DFA dfa);
 
     /* Initializes the lexer to a given input stream (usually a file) */
-    int init(std::istream *stream);
+    void init(std::istream *stream);
 
     /* Gets the next token, or END_LEX if none exists */
     int next_token();
 
-    /* Gets the current line number */
+    /* Gets the current line number and line position */
     int line_number();
+    int position();
 
 private:
     DFA dfa;
@@ -24,6 +25,8 @@ private:
     char *forward = buffer;
     char *back = buffer;
     std::istream *in;
+    int line;
+    int pos;
 
     void fill_buffer(int half);
     char cur_char();

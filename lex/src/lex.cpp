@@ -44,15 +44,44 @@ int Lexer::next_token() {
 
     if (cur_char() == NULL) return END_LEX;
 
-    while (dfa.move(next_char()) != DFA_ERROR) {
+    char c;
+    while (dfa.move(c = next_char()) != DFA_ERROR) {
         if (dfa.status() > DFA_OK) {
             last_match = dfa.status();
             match_pos = dfa.move_count();
         }
+
+        if (c == '\n') {
+            line++;
+            pos = 0;
+        }
+        else pos++;
+    }
+
+    if (dfa.move_count() == 1 && dfa.status() == DFA_ERROR) {
+        std::cerr << "error: unexpected character '" << c << "' at line " << line << ", position " << pos << std::endl;
+        return END_LEX;
     }
 
     back(dfa.move_count() - match_pos);
     dfa.reset();
 
     return last_match-1;
+}
+
+void Lexer::init(std::istream *in) {
+    this->in = in;
+    this->line = 0;
+}
+
+Lexer::Lexer(DFA dfa) {
+    this->dfa = dfa;
+}
+
+int Lexer::line_number() {
+    return line;
+}
+
+int Lexer::position() {
+    return pos;
 }
