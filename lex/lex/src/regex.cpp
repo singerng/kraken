@@ -1,4 +1,4 @@
-#include <regex.h>
+#include "../include/regex.h"
 #include <algorithm>
 #include <iostream>
 
@@ -138,7 +138,7 @@ RegexNode *RegexParser::factor(const char **str)
 		else /* ERROR */;
 
 		(*str)++;
-		return new Leaf(val, False);
+		return new Leaf(val, false);
 	}
 	else if (**str == '(')
 	{

@@ -1,5 +1,5 @@
-#include <regex.h>
-#include <dfa.h>
+#include "../lex/include/regex.h"
+#include "dfa.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -59,41 +59,4 @@ int next_token(std::istream *in) {
     dfa.reset();
 
     return last_match-1;
-}
-
-int main(int argc, char **argv) {
-    RegexParser prs;
-
-    /* Open the lexical specification file */
-    std::ifstream spec;
-    spec.open(argv[1]);
-
-    /* Parse each token into a DFA and load it into a map */
-    std::string name, pattern;
-
-    RegexNode *node = NULL;
-
-    while (spec >> name) {
-        spec.get();
-        getline(spec, pattern);
-        const char *cregex = pattern.c_str();
-        RegexNode *regex = prs.regex(&cregex);
-
-        tokens.push_back(name);
-
-        if (node) node = new UnionNode(node, new ConcatNode(regex, new Leaf(tokens.size(), true)));
-        else node = new ConcatNode(regex, new Leaf(tokens.size(), true));
-    }
-
-    dfa = prs.parse(node);
-
-    std::ifstream in;
-    in.open(argv[2]);
-
-    fill_buffer(&in, 0);
-
-    int tok;
-    while ((tok = next_token(&in)) != -1) {
-        std::cout << tokens[tok] << std::endl;
-    }
 }

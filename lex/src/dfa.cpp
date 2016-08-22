@@ -1,4 +1,4 @@
-#include <dfa.h>
+#include "dfa.h"
 #include <iostream>
 #include <array>
 #include <algorithm>
@@ -18,6 +18,10 @@ int DFA::add_state() {
 
     /* Return the state number of the state we just added */
     return dfa.size()-1;
+}
+
+int DFA::num_states() {
+    return dfa.size();
 }
 
 void DFA::set_accept(int state, int accept) {

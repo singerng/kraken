@@ -21,6 +21,9 @@ public:
     /* Add a state to the DFA, returning its state number */
     int add_state();
 
+    /* Count the number of states in the DFA */
+    int num_states();
+
     /* Mark a DFA state as accept or non-accept */
     void set_accept(int state, int accept);
 
