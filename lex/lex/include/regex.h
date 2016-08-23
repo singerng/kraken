@@ -2,7 +2,7 @@
 #define __REGEX_H
 
 #include <unordered_set>
-#include <dfa.h>
+#include <lex/dfa.h>
 
 class Leaf;
 

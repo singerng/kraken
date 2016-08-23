@@ -1,19 +1,22 @@
-#include <dfa.h>
-#include <lex.h>
+#include <lex/dfa.h>
+#include <lex/lex.h>
 #include <iostream>
 #include <fstream>
 #include <map>
 
-void Lexer::fill_buffer(int half) {
+void Lexer::fill_buffer(int half)
+{
     in->get(buffer + (BLOCK_SIZE+1)*half*sizeof(char), BLOCK_SIZE+1, NULL);
     buffer[(BLOCK_SIZE+1)*(half+1)-1] = NULL;
 }
 
-char Lexer::cur_char() {
+char Lexer::cur_char()
+{
     return *forward;
 }
 
-char Lexer::next_char() {
+char Lexer::next_char()
+{
     forward++;
     if (*forward == NULL) {
         if (forward == buffer + BLOCK_SIZE) {
@@ -27,36 +30,40 @@ char Lexer::next_char() {
     return *forward;
 }
 
-char Lexer::back(int back) {
+char Lexer::back(int back)
+{
     /* TODO: seek back when it's not contained within the buffer */
-    if (forward >= buffer + BLOCK_SIZE + 1 && forward - back < buffer + BLOCK_SIZE + 1) {
-        forward -= back - 1;
-    } else if (forward >= buffer && forward - back < buffer) {
-        forward += 2*(BLOCK_SIZE+1) - back - 1;
-    } else forward -= back;
+    if (forward >= buffer + BLOCK_SIZE + 1 && forward - back < buffer + BLOCK_SIZE + 1) forward -= back - 1;
+    else if (forward >= buffer && forward - back < buffer) forward += 2*(BLOCK_SIZE+1) - back - 1;
+    else forward -= back;
 }
 
-int Lexer::next_token() {
+int Lexer::next_token()
+{
     int last_match = DFA_OK;
     int match_pos = 0;
 
     if (cur_char() == NULL) return END_LEX;
 
     char c;
-    while (dfa.move(c = next_char()) != DFA_ERROR) {
-        if (dfa.status() > DFA_OK) {
+    while (dfa.move(c = next_char()) != DFA_ERROR)
+    {
+        if (dfa.status() > DFA_OK)
+        {
             last_match = dfa.status();
             match_pos = dfa.move_count();
         }
 
-        if (c == '\n') {
+        if (c == '\n')
+        {
             line++;
             pos = 0;
         }
         else pos++;
     }
 
-    if (dfa.move_count() == 1 && dfa.status() == DFA_ERROR) {
+    if (dfa.move_count() == 1 && dfa.status() == DFA_ERROR)
+    {
         std::cerr << "error: unexpected character '" << c << "' at line " << line << ", position " << pos << std::endl;
         return END_LEX;
     }
@@ -67,19 +74,23 @@ int Lexer::next_token() {
     return last_match-1;
 }
 
-void Lexer::init(std::istream *in) {
+void Lexer::init(std::istream *in)
+{
     this->in = in;
     this->line = 0;
 }
 
-Lexer::Lexer(DFA dfa) {
+Lexer::Lexer(DFA dfa)
+{
     this->dfa = dfa;
 }
 
-int Lexer::line_number() {
+int Lexer::line_number()
+{
     return line;
 }
 
-int Lexer::position() {
+int Lexer::position()
+{
     return pos;
 }

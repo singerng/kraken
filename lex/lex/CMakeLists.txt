@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 # Add include directory
 include_directories("include")
+include_directories("../include")
 
 # Compile and link
 add_executable(lexgen src/main.cpp src/regex.cpp)

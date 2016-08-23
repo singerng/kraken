@@ -1,5 +1,5 @@
 #include <regex.h>
-#include <dfa.h>
+#include <lex/dfa.h>
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -7,10 +7,12 @@
 std::vector<std::string> tokens;
 DFA dfa;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     RegexParser prs;
 
-    if (argc != 3) {
+    if (argc != 3)
+    {
         std::cout << "usage: lex infile outfile" << std::endl;
         std::cout << "  infile:   a correctly formatted description of tokens to parse" << std::endl;
         std::cout << "  outfile:  a DFA corresponding to the tokens" << std::endl;
@@ -21,9 +23,10 @@ int main(int argc, char **argv) {
     std::ifstream spec;
     spec.open(argv[1]);
 
-    if (!spec.is_open()) {
+    if (!spec.is_open())
+    {
         std::cerr << "error opening infile. aborting." << std::endl;
-        return 0;
+        return -1;
     }
 
     /* Parse each token into a DFA and load it into a map */
@@ -31,7 +34,8 @@ int main(int argc, char **argv) {
 
     RegexNode *node = NULL;
 
-    while (spec >> name) {
+    while (spec >> name)
+    {
         spec.get();
         getline(spec, pattern);
         const char *cregex = pattern.c_str();
@@ -45,6 +49,7 @@ int main(int argc, char **argv) {
 
     dfa = prs.parse(node);
 
-    std::ofstream out;
-    out.open(argv[2]);
+    std::ofstream out(argv[2], std::ios::binary);
+    out << dfa;
+    out.close();
 }

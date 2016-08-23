@@ -13,21 +13,21 @@
  * factor -> <character> | (regex)
  */
 
-static void merge_into(pos_set *left, pos_set *right) {
-	for (Leaf *l : *right) {
-		left->insert(l);
-	}
+static void merge_into(pos_set *left, pos_set *right)
+{
+	for (Leaf *l : *right) left->insert(l);
 }
 
-static pos_set *merge(pos_set *left, pos_set *right) {
+static pos_set *merge(pos_set *left, pos_set *right)
+{
 	pos_set *merged = new pos_set(*left);
-
 	merge_into(merged, right);
 
 	return merged;
 }
 
-DFA RegexParser::parse(RegexNode *root) {
+DFA RegexParser::parse(RegexNode *root)
+{
 	std::vector<pos_set> states;
 	states.push_back(*root->first);
 
@@ -38,20 +38,24 @@ DFA RegexParser::parse(RegexNode *root) {
 
 	/* TODO: destroy the tree data structure */
 
-	while (first_unmarked < states.size()) {
+	while (first_unmarked < states.size())
+	{
 		pos_set t = states[first_unmarked];
 
 		/* TODO: adapt this to work with Unicode */
-		for (int c = 0; c < 256; c++) {
+		for (int c = 0; c < 256; c++)
+		{
 			pos_set u;
 
 			for (Leaf *l : t)
 				if (l->value == c) merge_into(&u, l->follow);
 
-			if (u.size() > 0) {
+			if (u.size() > 0)
+			{
 				int pos = std::find(states.begin(), states.end(), u) - states.begin();
 
-				if (pos == states.size()) {
+				if (pos == states.size())
+				{
 					states.push_back(u);
 					int state = dfa.add_state();
 
@@ -86,7 +90,8 @@ RegexNode *RegexParser::regex(const char **str)
 
 RegexNode *RegexParser::concat(const char **str)
 {
-	if (**str && **str != ')') {
+	if (**str && **str != ')')
+	{
 		RegexNode *left = term(str);
 		if (!left) return NULL;
 
@@ -94,7 +99,8 @@ RegexNode *RegexParser::concat(const char **str)
 
 		if (right) return new ConcatNode(left, right);
 		else return left;
-	} else return new NullNode();
+	}
+	else return new NullNode();
 }
 
 RegexNode *RegexParser::term(const char **str)
@@ -201,9 +207,7 @@ ConcatNode::ConcatNode(RegexNode *left, RegexNode *right) {
 	if (right->nullable) this->last = merge(left->last, right->last);
 	else this->last = new pos_set(*right->last);
 
-	for (Leaf* l : *left->last) {
-		merge_into(l->follow, right->first);
-	}
+	for (Leaf* l : *left->last) merge_into(l->follow, right->first);
 }
 
 UnionNode::UnionNode(RegexNode *left, RegexNode *right) {
