@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <array>
+#include <iostream>
 
 #define DFA_ERROR   -1
 #define DFA_OK      0
@@ -16,6 +17,7 @@ struct state
 class DFA
 {
 public:
+    /* Construct a blank DFA */
     DFA();
 
     /* Add a state to the DFA, returning its state number */
@@ -44,6 +46,12 @@ public:
 
     /* Print the DFA for debugging */
     void print();
+
+    /* Write this DFA to a file */
+    friend std::ostream& operator<<(std::ostream& out, DFA& dfa);
+
+    /* Read this DFA from a file */
+    friend std::istream& operator>>(std::istream& in, DFA& dfa);
 
 private:
     std::vector<struct state> dfa;

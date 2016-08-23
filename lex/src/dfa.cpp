@@ -1,6 +1,7 @@
 #include <dfa.h>
 #include <iostream>
 #include <algorithm>
+#include <endian.h>
 
 DFA::DFA() {
     reset();
@@ -70,5 +71,33 @@ void DFA::print() {
         }
 
         std::cout << std::endl;
+    }
+}
+
+std::ostream& operator<<(std::ostream &out, DFA &dfa) {
+    out << htole32(dfa.dfa.size());
+
+    for (int state = 0; state < dfa.num_states(); state++) {
+        out << htole32(dfa.dfa[state].accept);
+        for (int c = 0; c < 256; c++) out << htole32(dfa.dfa[state].trans[c]);
+    }
+}
+
+std::istream& operator>>(std::istream &in, DFA &dfa) {
+    int states;
+    in >> states;
+    states = le32toh(states);
+
+    for (int state = 0; state < states; state++) {
+        dfa.add_state();
+
+        int target;
+        in >> target;
+        dfa.set_accept(state, le32toh(target));
+
+        for (int c = 0; c < 256; c++) {
+            in >> target;
+            dfa.set_trans(state, c, le32toh(target));
+        }
     }
 }

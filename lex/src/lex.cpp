@@ -4,8 +4,6 @@
 #include <fstream>
 #include <map>
 
-#define BLOCK_SIZE  1024
-
 void Lexer::fill_buffer(int half) {
     in->get(buffer + (BLOCK_SIZE+1)*half*sizeof(char), BLOCK_SIZE+1, NULL);
     buffer[(BLOCK_SIZE+1)*(half+1)-1] = NULL;

@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#define BLOCK_SIZE  1024
+
 #define END_LEX		-1
 
 class Lexer {
@@ -23,7 +25,7 @@ private:
     DFA dfa;
     char buffer[(BLOCK_SIZE+1)*2];
     char *forward = buffer;
-    char *back = buffer;
+    char *start = buffer;
     std::istream *in;
     int line;
     int pos;
