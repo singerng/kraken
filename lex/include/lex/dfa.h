@@ -30,10 +30,10 @@ public:
     void set_accept(int state, int accept);
 
     /* Set a transition from one state of the DFA to another */
-    void set_trans(int source, char value, int target);
+    void set_trans(int source, int value, int target);
 
     /* Move to a new state based on an input symbol */
-    int move(char value);
+    int move(int value);
 
     /* Count the moves already made */
     int move_count();

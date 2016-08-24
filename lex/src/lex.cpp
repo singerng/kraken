@@ -14,7 +14,7 @@ char Lexer::next_char()
     return *(forward++);
 }
 
-char Lexer::retreat(int back)
+void Lexer::retreat(int back)
 {
     forward -= back;
 }
@@ -30,8 +30,7 @@ int Lexer::next_token(struct token &token)
 
     if (cur_char() == NULL) return END_LEX;
 
-    char c;
-    while (dfa.move(c = next_char()) != DFA_ERROR)
+    while (dfa.move(next_char()) != DFA_ERROR)
     {
         if (dfa.status() > DFA_OK)
         {
@@ -39,7 +38,7 @@ int Lexer::next_token(struct token &token)
             match_pos = dfa.move_count();
         }
 
-        if (c == '\n')
+        if (cur_char() == '\n')
         {
             line++;
             pos = 0;
@@ -49,7 +48,7 @@ int Lexer::next_token(struct token &token)
 
     if (dfa.move_count() == 1 && dfa.status() == DFA_ERROR)
     {
-        std::cerr << "error: unexpected character '" << c << "' at line " << line << ", position " << pos << std::endl;
+        std::cerr << "error: unexpected character '" << cur_char() << "' at line " << line << ", position " << pos << std::endl;
         return END_LEX;
     }
 
@@ -58,6 +57,7 @@ int Lexer::next_token(struct token &token)
 
     token.id = last_match-1;
     token.token = this->token();
+    back = forward;
 
     return CONTINUE_LEX;
 }
@@ -70,8 +70,6 @@ void Lexer::init(std::istream *in, int size)
 
     in->read(buffer, size);
     buffer[size] = '\0';
-
-    std::cout << buffer << std::endl;
 }
 
 Lexer::Lexer(DFA dfa)

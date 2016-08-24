@@ -37,7 +37,7 @@ private:
 
     char cur_char();
     char next_char();
-    char retreat(int num);
+    void retreat(int num);
     std::string token();
 };
 

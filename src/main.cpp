@@ -7,7 +7,6 @@ int main(int argc, char **argv)
     DFA dfa;
 
     std::ifstream dfa_file("kraken.dfa", std::ios::binary);
-    dfa_file.open("kraken.dfa");
 
     if (!dfa_file.is_open())
     {
@@ -16,8 +15,6 @@ int main(int argc, char **argv)
     }
 
     dfa_file >> dfa;
-
-    dfa.print();
 
     if (argc != 2)
     {
@@ -38,11 +35,12 @@ int main(int argc, char **argv)
     int size = code.tellg();
     code.seekg(0);
 
-    std::cout << size << std::endl;
-
     /* Create the lexer */
     Lexer lex(dfa);
     lex.init(&code, size);
+
+    struct token tok;
+    while (lex.next_token(tok) == CONTINUE_LEX) std::cout << tok.id << "," << tok.token << std::endl;
 
     return 0;
 }

@@ -33,7 +33,7 @@ void DFA::set_accept(int state, int accept)
     dfa[state].accept = accept;
 }
 
-void DFA::set_trans(int source, char value, int dest)
+void DFA::set_trans(int source, int value, int dest)
 {
     /* Check that this is a valid destination state */
     if (dest < DFA_ERROR || dest >= (int) dfa.size()) std::cerr << "error: setting dest to value " << dest << std::endl;
@@ -42,7 +42,7 @@ void DFA::set_trans(int source, char value, int dest)
     dfa[source].trans[value] = dest;
 }
 
-int DFA::move(char value)
+int DFA::move(int value)
 {
     state = dfa[state].trans[value];
     count++;
@@ -94,6 +94,7 @@ std::ostream& operator<<(std::ostream &out, DFA &dfa)
     {
         i = htole32(dfa.dfa[state].accept);
         out.write((const char*) &i, sizeof(int));
+
         for (int c = 0; c < 256; c++)
         {
             i = htole32(dfa.dfa[state].trans[c]);
@@ -107,10 +108,7 @@ std::ostream& operator<<(std::ostream &out, DFA &dfa)
 std::istream& operator>>(std::istream &in, DFA &dfa) {
     int states;
     in.read((char*) &states, sizeof(int));
-    std::cout << states << std::endl;
     states = le32toh(states);
-
-    std::cout << states << std::endl;
 
     for (int state = 0; state < states; state++) dfa.add_state();
 
