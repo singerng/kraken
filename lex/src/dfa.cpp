@@ -107,7 +107,10 @@ std::ostream& operator<<(std::ostream &out, DFA &dfa)
 std::istream& operator>>(std::istream &in, DFA &dfa) {
     int states;
     in.read((char*) &states, sizeof(int));
+    std::cout << states << std::endl;
     states = le32toh(states);
+
+    std::cout << states << std::endl;
 
     for (int state = 0; state < states; state++) dfa.add_state();
 

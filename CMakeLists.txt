@@ -10,6 +10,9 @@ add_custom_command(OUTPUT kraken.dfa COMMAND lexgen ARGS src/kraken.lex ${CMAKE_
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DEPENDS src/kraken.lex)
 add_custom_target(dfa DEPENDS kraken.dfa)
 
+# Move the test files into the build area
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 add_executable(kraken src/main.cpp)
 
 add_dependencies(kraken dfa)

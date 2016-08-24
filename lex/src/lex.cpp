@@ -57,16 +57,21 @@ int Lexer::next_token(struct token &token)
     dfa.reset();
 
     token.id = last_match-1;
-    token.token = token();
+    token.token = this->token();
 
     return CONTINUE_LEX;
 }
 
 void Lexer::init(std::istream *in, int size)
 {
-    buffer = new char[size];
+    buffer = new char[size+1];
     forward = buffer;
     back = buffer;
+
+    in->read(buffer, size);
+    buffer[size] = '\0';
+
+    std::cout << buffer << std::endl;
 }
 
 Lexer::Lexer(DFA dfa)
