@@ -5,8 +5,8 @@
 #include <array>
 #include <iostream>
 
-#define DFA_ERROR   -1
-#define DFA_OK      0
+#define DFA_ERROR       -1
+#define DFA_OK          0
 
 struct state
 {

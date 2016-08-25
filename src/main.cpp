@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     lex.init(&code, size);
 
     struct token tok;
-    while (lex.next_token(tok) == CONTINUE_LEX) std::cout << tok.id << "," << tok.token << std::endl;
+    while (lex.next_token(tok) == CONTINUE_LEX) std::cout << tok.token << ": \"" << tok.lexeme << "\"" << std::endl;
 
     return 0;
 }

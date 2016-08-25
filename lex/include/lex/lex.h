@@ -3,14 +3,16 @@
 
 #include <iostream>
 
-#define BLOCK_SIZE  1024
+#define BLOCK_SIZE          1024
 
-#define CONTINUE_LEX    0
-#define END_LEX		    -1
+#define LEX_DISCARD_TOKEN   0
+
+#define CONTINUE_LEX        0
+#define END_LEX		        -1
 
 struct token {
-    int id;
-    std::string token;
+    int token;
+    std::string lexeme;
 };
 
 class Lexer {
@@ -38,7 +40,7 @@ private:
     char cur_char();
     char next_char();
     void retreat(int num);
-    std::string token();
+    std::string matched_lexeme();
 };
 
 #endif

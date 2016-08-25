@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <lex/lex.h>
 
 std::vector<std::string> tokens;
 DFA dfa;
@@ -29,7 +30,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    /* Parse each token into a DFA and load it into a map */
+    /* Parse each matched_lexeme into a DFA and load it into a map */
     std::string name, pattern;
 
     RegexNode *node = NULL;
@@ -41,10 +42,19 @@ int main(int argc, char **argv)
         const char *cregex = pattern.c_str();
         RegexNode *regex = prs.regex(&cregex);
 
-        tokens.push_back(name);
+        int flags = 0;
 
-        if (node) node = new UnionNode(node, new ConcatNode(regex, new Leaf(tokens.size(), true)));
-        else node = new ConcatNode(regex, new Leaf(tokens.size(), true));
+        int token_num;
+
+        if (name.back() == ']' && name.find('d', name.find_last_of('[')) != std::string::npos) {
+            token_num = LEX_DISCARD_TOKEN;
+        } else {
+            tokens.push_back(name);
+            token_num = tokens.size()+1;
+        }
+
+        if (node) node = new UnionNode(node, new ConcatNode(regex, new Leaf(token_num, true)));
+        else node = new ConcatNode(regex, new Leaf(token_num, true));
     }
 
     dfa = prs.parse(node);

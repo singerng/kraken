@@ -19,7 +19,7 @@ void Lexer::retreat(int back)
     forward -= back;
 }
 
-std::string Lexer::token() {
+std::string Lexer::matched_lexeme() {
     return std::string(back, forward-back);
 }
 
@@ -55,9 +55,12 @@ int Lexer::next_token(struct token &token)
     retreat(dfa.move_count() - match_pos);
     dfa.reset();
 
-    token.id = last_match-1;
-    token.token = this->token();
+    token.lexeme = this->matched_lexeme();
     back = forward;
+
+    if (last_match == LEX_DISCARD_TOKEN) return next_token(token);
+
+    token.token = last_match-2;
 
     return CONTINUE_LEX;
 }
