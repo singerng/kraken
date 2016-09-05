@@ -12,4 +12,4 @@ target_compile_features(lexgen PRIVATE cxx_range_for)
 
 set_target_properties(lexgen PROPERTIES OUTPUT_NAME lex)
 
-target_link_libraries(lexgen lex)
+target_link_libraries(lexgen parse)

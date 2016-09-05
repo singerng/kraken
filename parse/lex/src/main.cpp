@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 
     if (argc != 3)
     {
-        std::cout << "usage: lex infile outfile" << std::endl;
+        std::cout << "usage: parse infile outfile" << std::endl;
         std::cout << "  infile:   a correctly formatted description of tokens to parse" << std::endl;
         std::cout << "  outfile:  a DFA corresponding to the tokens" << std::endl;
         return 0;

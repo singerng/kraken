@@ -3,7 +3,7 @@ project(kraken)
 
 add_definitions(-std=c++11)
 
-add_subdirectory("lex")
+add_subdirectory("parse")
 
 # Compile the DFA
 add_custom_command(OUTPUT kraken.dfa COMMAND lexgen ARGS src/kraken.lex ${CMAKE_CURRENT_BINARY_DIR}/kraken.dfa
@@ -18,7 +18,7 @@ add_executable(kraken src/main.cpp)
 add_dependencies(kraken dfa)
 
 # Require some stuff we need
-target_compile_features(lexgen PRIVATE cxx_range_for )
-include_directories("lex/include")
+target_compile_features(lexgen PRIVATE cxx_range_for)
+include_directories("parse/include")
 
-target_link_libraries(kraken lex)
+target_link_libraries(kraken parse)
